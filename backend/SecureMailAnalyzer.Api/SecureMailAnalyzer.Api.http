@@ -1,0 +1,7 @@
+@SecureMailAnalyzer.Api_HostAddress = http://localhost:5105
+
+# Sağlık kontrolü endpoint'ini test et
+GET {{SecureMailAnalyzer.Api_HostAddress}}/health
+Accept: application/json
+
+###
