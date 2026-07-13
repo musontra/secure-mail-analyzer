@@ -17,14 +17,23 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // Analiz motoru: durum tutmaz (stateless), bu yüzden tek örnek (singleton) yeterli
 builder.Services.AddSingleton<IAnalysisEngine, RuleBasedAnalysisEngine>();
 
+// CORS: tarayıcının Vite dev server'ından (5173) API'ye (5105) istek atmasına izin ver
+const string devCorsPolicy = "DevFrontend";
+builder.Services.AddCors(options =>
+    options.AddPolicy(devCorsPolicy, policy =>
+        policy.WithOrigins("http://localhost:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod()));
+
 // Kayıtlı servislerle uygulamayı inşa et
 var app = builder.Build();
 
-// Swagger arayüzü sadece geliştirme ortamında açık olsun
+// Swagger ve CORS izni sadece geliştirme ortamında açık olsun
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    app.UseCors(devCorsPolicy);
 }
 
 // Sağlık kontrolü: API ayakta mı diye bakmak için kullanılır
