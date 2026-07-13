@@ -27,7 +27,20 @@ public record AnalysisResponse(
             analysis.InputContent,
             analysis.RiskLevel,
             analysis.RiskScore,
-            JsonSerializer.Deserialize<List<DetectedSignal>>(analysis.DetectedSignals, JsonOptions)
-                ?? new List<DetectedSignal>(),
+            ParseSignals(analysis.DetectedSignals),
             analysis.CreatedAt);
+
+    // Eski kayıtlarda kolon "{}" (boş obje) olabilir; dizi değilse boş liste döner
+    private static List<DetectedSignal> ParseSignals(string json)
+    {
+        try
+        {
+            return JsonSerializer.Deserialize<List<DetectedSignal>>(json, JsonOptions)
+                ?? new List<DetectedSignal>();
+        }
+        catch (JsonException)
+        {
+            return new List<DetectedSignal>();
+        }
+    }
 }

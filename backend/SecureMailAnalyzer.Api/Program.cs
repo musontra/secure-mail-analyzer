@@ -83,6 +83,17 @@ app.MapPost("/api/analyses", async (CreateAnalysisRequest request, IAnalysisEngi
 .WithName("CreateAnalysis")
 .WithOpenApi();
 
+// Tek bir analiz kaydını getirir (sonuç sayfası ve geçmişten detay açma kullanır)
+app.MapGet("/api/analyses/{id:guid}", async (Guid id, AppDbContext db) =>
+{
+    var analysis = await db.Analyses.FindAsync(id);
+    return analysis is null
+        ? Results.NotFound(new { error = "Analiz kaydı bulunamadı." })
+        : Results.Ok(AnalysisResponse.FromEntity(analysis));
+})
+.WithName("GetAnalysisById")
+.WithOpenApi();
+
 // Tüm analiz kayıtlarını yeniden eskiye doğru listeler
 app.MapGet("/api/analyses", async (AppDbContext db) =>
 {
