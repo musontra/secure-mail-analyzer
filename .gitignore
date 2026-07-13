@@ -1,0 +1,22 @@
+# Ortam değişkenleri (şifreler burada tutulur, asla commit edilmez)
+.env
+.env.local
+
+# .NET
+backend/**/bin/
+backend/**/obj/
+*.user
+
+# Node / React
+frontend/node_modules/
+frontend/dist/
+npm-debug.log*
+
+# IDE
+.vs/
+.vscode/
+.idea/
+
+# İşletim sistemi
+Thumbs.db
+.DS_Store

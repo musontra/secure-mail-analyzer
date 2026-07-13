@@ -1,0 +1,20 @@
+# Geliştirme ortamı: şimdilik sadece PostgreSQL 16 servisi
+services:
+  postgres:
+    # Resmi PostgreSQL 16 imajı (alpine: küçük boyutlu Linux tabanı)
+    image: postgres:16-alpine
+    environment:
+      # Değerler önce .env dosyasından okunur; yoksa ":-" sonrası varsayılan kullanılır
+      POSTGRES_USER: ${POSTGRES_USER:-mailanalyzer}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dev_sifre_degistir}
+      POSTGRES_DB: ${POSTGRES_DB:-secure_mail_analyzer}
+    ports:
+      # host:container -> makinedeki 5432, konteynerdeki 5432'ye yönlenir
+      - "5432:5432"
+    volumes:
+      # Named volume: konteyner silinse bile veriler kalıcı olur
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  # Docker'ın yönettiği kalıcı veri alanı
+  postgres_data:
