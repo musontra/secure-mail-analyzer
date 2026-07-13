@@ -26,9 +26,11 @@ ve nedenlerini gösterir. Staj bireysel projesi.
 - Ben öğrenme amaçlı ilerliyorum. SADECE senden istenen adımı yap,
   sonraki adımlara geçme, istenmeyen dosya oluşturma.
 - Her adım sonunda: (1) oluşturduğun/değiştirdiğin her dosyanın ne işe
-  yaradığını 2-3 cümleyle Türkçe açıkla, (2) öğrenmem gereken 1-2 temel
-  kavramı belirt.
-- Commit'leri ben atacağım, sen commit atma.
+  yaradığını 1-2 cümleyle Türkçe açıkla (kısa tut), (2) öğrenmem gereken
+  1-2 temel kavramı belirt.
+- Her adımın sonunda değişiklikleri conventional commits formatında
+  Türkçe mesajla commit'le ve push'la (feat:/fix:/chore:/docs:).
+  Adım başına tek commit.
 - Kod içi yorumlar ve kullanıcıya görünen tüm metinler Türkçe,
   değişken/fonksiyon isimleri İngilizce.
 
