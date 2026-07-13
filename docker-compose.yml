@@ -9,8 +9,9 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dev_sifre_degistir}
       POSTGRES_DB: ${POSTGRES_DB:-secure_mail_analyzer}
     ports:
-      # host:container -> makinedeki 5432, konteynerdeki 5432'ye yönlenir
-      - "5432:5432"
+      # host:container -> makinedeki 5433, konteynerdeki 5432'ye yönlenir
+      # (5432 değil, çünkü makinede yerel kurulu PostgreSQL o portu kullanıyor)
+      - "5433:5432"
     volumes:
       # Named volume: konteyner silinse bile veriler kalıcı olur
       - postgres_data:/var/lib/postgresql/data
