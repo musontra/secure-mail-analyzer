@@ -10,7 +10,9 @@ public record AnalysisResponse(
     string RiskLevel,
     int RiskScore,
     IReadOnlyList<DetectedSignal> DetectedSignals,
-    DateTime CreatedAt)
+    DateTime CreatedAt,
+    string? LlmAssessment,
+    string? EducationalExplanation)
 {
     // camelCase JSON (web varsayılanı); hem yazma hem okuma bu ayarla yapılır
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
@@ -28,7 +30,9 @@ public record AnalysisResponse(
             analysis.RiskLevel,
             analysis.RiskScore,
             ParseSignals(analysis.DetectedSignals),
-            analysis.CreatedAt);
+            analysis.CreatedAt,
+            analysis.LlmAssessment,
+            analysis.EducationalExplanation);
 
     // Eski kayıtlarda kolon "{}" (boş obje) olabilir; dizi değilse boş liste döner
     private static List<DetectedSignal> ParseSignals(string json)

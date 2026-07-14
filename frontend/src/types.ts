@@ -20,4 +20,7 @@ export interface AnalysisResponse {
   riskScore: number
   detectedSignals: DetectedSignal[]
   createdAt: string
+  // LLM katmanı sonuçları; LLM çalışmadıysa null
+  llmAssessment: RiskLevel | null
+  educationalExplanation: string | null
 }

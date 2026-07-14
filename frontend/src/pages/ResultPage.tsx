@@ -21,7 +21,7 @@ function AiAssessmentCard({ aiText }: { aiText?: string | null }) {
         <h3 className="font-semibold text-white">Yapay Zeka Değerlendirmesi</h3>
       </div>
       <p className="mt-3 text-sm leading-relaxed text-slate-400">
-        {aiText ?? 'Yapay zeka analizi yakında eklenecek.'}
+        {aiText ?? 'Yapay zeka analizi bu kayıt için mevcut değil.'}
       </p>
     </div>
   )
@@ -100,7 +100,7 @@ function ResultPage() {
         </div>
       )}
 
-      <AiAssessmentCard />
+      <AiAssessmentCard aiText={analysis.educationalExplanation} />
 
       {/* Alt aksiyonlar */}
       <div className="mt-8 flex justify-center gap-4">

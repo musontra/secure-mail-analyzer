@@ -30,5 +30,8 @@ public class AppDbContext : DbContext
         // (admin istatistikleri bu kolon üzerinden GROUP BY ile çıkacak)
         analysis.Property(a => a.DetectedSignals).HasColumnName("detected_signals").HasColumnType("jsonb");
         analysis.Property(a => a.CreatedAt).HasColumnName("created_at");
+        // LLM katmanı kolonları: LLM devre dışıyken null kalır
+        analysis.Property(a => a.LlmAssessment).HasColumnName("llm_assessment");
+        analysis.Property(a => a.EducationalExplanation).HasColumnName("educational_explanation");
     }
 }

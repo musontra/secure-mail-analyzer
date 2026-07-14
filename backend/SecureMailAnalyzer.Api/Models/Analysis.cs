@@ -22,4 +22,10 @@ public class Analysis
 
     // Kaydın oluşturulma zamanı (UTC)
     public DateTime CreatedAt { get; set; }
+
+    // LLM katmanının risk değerlendirmesi ("low"|"medium"|"high"); LLM çalışmadıysa null
+    public string? LlmAssessment { get; set; }
+
+    // LLM'in ürettiği Türkçe eğitici açıklama; LLM çalışmadıysa null
+    public string? EducationalExplanation { get; set; }
 }

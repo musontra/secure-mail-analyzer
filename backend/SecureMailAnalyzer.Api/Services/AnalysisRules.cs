@@ -30,6 +30,18 @@ public static class AnalysisRules
         score >= HighThreshold ? "high" :
         score >= MediumThreshold ? "medium" : "low";
 
+    // Seviye karşılaştırması için sıra değeri (low=0, medium=1, high=2)
+    public static int GetRiskRank(string level) => level switch
+    {
+        "high" => 2,
+        "medium" => 1,
+        _ => 0,
+    };
+
+    // Seviyeyi BİR kademe yükseltir (LLM kuraldan yüksek risk gördüğünde kullanılır)
+    public static string ElevateOneStep(string level) =>
+        level == "low" ? "medium" : "high";
+
     // --- Yapısal kural eşikleri ---
     public const int MaxSubdomainCount = 2;        // 3+ alt alan adı tetikler
     public const int MaxHostLength = 40;           // bundan uzun host şüpheli
