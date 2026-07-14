@@ -1,0 +1,3 @@
+# Windows'taki node_modules Linux imajına kopyalanırsa native binary'ler bozulur
+node_modules/
+dist/

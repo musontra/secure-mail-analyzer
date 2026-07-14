@@ -1,0 +1,3 @@
+# Yereldeki derleme artıkları build context'ine girmesin
+**/bin/
+**/obj/

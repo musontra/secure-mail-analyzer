@@ -63,10 +63,29 @@ builder.Services.AddCors(options =>
 // Kayıtlı servislerle uygulamayı inşa et
 var app = builder.Build();
 
-// Açılışta demo hesapları oluştur (yoksa)
+// Açılışta migration'ları otomatik uygula, sonra demo hesapları oluştur.
+// Container ortamında Postgres henüz hazır olmayabilir: 5 deneme x 3sn bekleme.
 using (var scope = app.Services.CreateScope())
 {
     var seedDb = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+    const int maxAttempts = 5;
+    for (var attempt = 1; ; attempt++)
+    {
+        try
+        {
+            seedDb.Database.Migrate();
+            break;
+        }
+        catch (Exception ex) when (attempt < maxAttempts)
+        {
+            app.Logger.LogWarning(
+                "Veritabanına ulaşılamadı ({ExceptionType}); deneme {Attempt}/{Max}, 3sn sonra tekrar...",
+                ex.GetType().Name, attempt, maxAttempts);
+            await Task.Delay(TimeSpan.FromSeconds(3));
+        }
+    }
+
     await DbSeeder.SeedAsync(seedDb);
 }
 

@@ -1,4 +1,4 @@
-# Geliştirme ortamı: şimdilik sadece PostgreSQL 16 servisi
+# Geliştirme ortamı: PostgreSQL + backend API + frontend (nginx)
 services:
   postgres:
     # Resmi PostgreSQL 16 imajı (alpine: küçük boyutlu Linux tabanı)
@@ -15,6 +15,29 @@ services:
     volumes:
       # Named volume: konteyner silinse bile veriler kalıcı olur
       - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    environment:
+      # Container'dan container'a bağlantı: Host=postgres (servis adı = hostname),
+      # port İÇ port olan 5432'dir — 5433 sadece host makineden erişim içindir
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-secure_mail_analyzer};Username=${POSTGRES_USER:-mailanalyzer};Password=${POSTGRES_PASSWORD:-dev_sifre_degistir}"
+      # Sırlar .env dosyasından geçer, imaja gömülmez
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      JWT_SECRET: ${JWT_SECRET}
+    ports:
+      # NOT: Backend'e normalde frontend nginx proxy üzerinden erişilir;
+      # bu satır SADECE geliştirme kolaylığı için (Swagger, curl testleri)
+      - "5105:8080"
+    depends_on:
+      - postgres
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
 
 volumes:
   # Docker'ın yönettiği kalıcı veri alanı

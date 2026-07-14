@@ -1,7 +1,9 @@
 import type { AdminStats, AnalysisResponse, AuthUser, InputType } from '../types'
 
-// Geliştirme ortamında backend adresi (ileride ortam değişkenine taşınacak)
-const API_BASE = 'http://localhost:5105'
+// Göreli taban: istekler her zaman sayfanın kendi origin'ine gider.
+// Geliştirmede Vite proxy'si (vite.config.ts), container'da nginx
+// bu istekleri backend'e iletir — ortama göre adres değişmez.
+const API_BASE = '/api'
 
 // Backend'in { error: "..." } formatındaki Türkçe mesajını çıkarır
 async function parseError(response: Response): Promise<string> {
@@ -30,7 +32,7 @@ function redirectIfUnauthorized(response: Response): void {
 }
 
 export async function loginRequest(email: string, password: string): Promise<AuthUser> {
-  const response = await fetch(`${API_BASE}/api/auth/login`, {
+  const response = await fetch(`${API_BASE}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
@@ -40,7 +42,7 @@ export async function loginRequest(email: string, password: string): Promise<Aut
 }
 
 export async function registerRequest(email: string, password: string): Promise<string> {
-  const response = await fetch(`${API_BASE}/api/auth/register`, {
+  const response = await fetch(`${API_BASE}/auth/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
@@ -54,7 +56,7 @@ export async function createAnalysis(
   inputType: InputType,
   inputContent: string,
 ): Promise<AnalysisResponse> {
-  const response = await fetch(`${API_BASE}/api/analyses`, {
+  const response = await fetch(`${API_BASE}/analyses`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
     body: JSON.stringify({ inputType, inputContent }),
@@ -65,21 +67,21 @@ export async function createAnalysis(
 }
 
 export async function getAnalyses(): Promise<AnalysisResponse[]> {
-  const response = await fetch(`${API_BASE}/api/analyses`, { headers: authHeaders() })
+  const response = await fetch(`${API_BASE}/analyses`, { headers: authHeaders() })
   redirectIfUnauthorized(response)
   if (!response.ok) throw new Error(await parseError(response))
   return (await response.json()) as AnalysisResponse[]
 }
 
 export async function getAnalysisById(id: string): Promise<AnalysisResponse> {
-  const response = await fetch(`${API_BASE}/api/analyses/${id}`, { headers: authHeaders() })
+  const response = await fetch(`${API_BASE}/analyses/${id}`, { headers: authHeaders() })
   redirectIfUnauthorized(response)
   if (!response.ok) throw new Error(await parseError(response))
   return (await response.json()) as AnalysisResponse
 }
 
 export async function getAdminStats(): Promise<AdminStats> {
-  const response = await fetch(`${API_BASE}/api/admin/stats`, { headers: authHeaders() })
+  const response = await fetch(`${API_BASE}/admin/stats`, { headers: authHeaders() })
   redirectIfUnauthorized(response)
   if (!response.ok) throw new Error(await parseError(response))
   return (await response.json()) as AdminStats
