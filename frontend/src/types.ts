@@ -25,6 +25,17 @@ export interface AnalysisResponse {
   educationalExplanation: string | null
 }
 
+// --- Auth ---
+
+export type UserRole = 'user' | 'admin'
+
+// Oturumdaki kullanıcı (login yanıtından gelir, sessionStorage'da saklanır)
+export interface AuthUser {
+  token: string
+  email: string
+  role: UserRole
+}
+
 // --- Admin istatistikleri (GET /api/admin/stats) ---
 
 export interface RiskDistribution {

@@ -28,4 +28,7 @@ public class Analysis
 
     // LLM'in ürettiği Türkçe eğitici açıklama; LLM çalışmadıysa null
     public string? EducationalExplanation { get; set; }
+
+    // Analizi yapan kullanıcı; auth öncesi eski kayıtlarda null
+    public Guid? UserId { get; set; }
 }

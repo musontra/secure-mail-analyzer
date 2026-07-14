@@ -14,6 +14,9 @@ public class AppDbContext : DbContext
     // "analyses" tablosuna karşılık gelen sorgulanabilir küme
     public DbSet<Analysis> Analyses => Set<Analysis>();
 
+    // "users" tablosuna karşılık gelen küme
+    public DbSet<User> Users => Set<User>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         var analysis = modelBuilder.Entity<Analysis>();
@@ -33,5 +36,18 @@ public class AppDbContext : DbContext
         // LLM katmanı kolonları: LLM devre dışıyken null kalır
         analysis.Property(a => a.LlmAssessment).HasColumnName("llm_assessment");
         analysis.Property(a => a.EducationalExplanation).HasColumnName("educational_explanation");
+        // Sahiplik: auth öncesi eski kayıtlar null kalır
+        analysis.Property(a => a.UserId).HasColumnName("user_id");
+
+        var user = modelBuilder.Entity<User>();
+        user.ToTable("users");
+        user.HasKey(u => u.Id);
+        user.Property(u => u.Id).HasColumnName("id");
+        user.Property(u => u.Email).HasColumnName("email").IsRequired();
+        user.Property(u => u.PasswordHash).HasColumnName("password_hash").IsRequired();
+        user.Property(u => u.Role).HasColumnName("role").IsRequired();
+        user.Property(u => u.CreatedAt).HasColumnName("created_at");
+        // Aynı e-postayla ikinci kayıt DB seviyesinde de engellenir
+        user.HasIndex(u => u.Email).IsUnique();
     }
 }

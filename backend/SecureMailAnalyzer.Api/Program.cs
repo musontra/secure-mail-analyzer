@@ -1,4 +1,8 @@
+using System.Security.Claims;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using SecureMailAnalyzer.Api.Data;
 using SecureMailAnalyzer.Api.Models;
 using SecureMailAnalyzer.Api.Services;
@@ -24,6 +28,30 @@ builder.Services.AddSingleton<IAnalysisEngine, RuleBasedAnalysisEngine>();
 builder.Services.AddHttpClient<ILlmAnalysisService, GeminiAnalysisService>(client =>
     client.Timeout = TimeSpan.FromSeconds(8));
 
+// JWT doğrulama: imza anahtarı .env'den, issuer/audience appsettings'ten.
+// Anahtar eksikse uygulama açılmaz (fail fast) — sırlar açılışta doğrulanır.
+var jwtSecret = builder.Configuration["JWT_SECRET"]
+    ?? throw new InvalidOperationException("JWT_SECRET tanımlı değil (.env dosyasına ekleyin).");
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            // Gelen her token'da şunlar denetlenir: imza, sürenin geçmemiş
+            // olması ve token'ın bu uygulama için üretilmiş olması
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
+            ValidateLifetime = true,
+            ValidateIssuer = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidateAudience = true,
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+        };
+    });
+builder.Services.AddAuthorization();
+builder.Services.AddSingleton<JwtTokenService>();
+
 // CORS: tarayıcının Vite dev server'ından (5173) API'ye (5105) istek atmasına izin ver
 const string devCorsPolicy = "DevFrontend";
 builder.Services.AddCors(options =>
@@ -35,6 +63,13 @@ builder.Services.AddCors(options =>
 // Kayıtlı servislerle uygulamayı inşa et
 var app = builder.Build();
 
+// Açılışta demo hesapları oluştur (yoksa)
+using (var scope = app.Services.CreateScope())
+{
+    var seedDb = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await DbSeeder.SeedAsync(seedDb);
+}
+
 // Swagger ve CORS izni sadece geliştirme ortamında açık olsun
 if (app.Environment.IsDevelopment())
 {
@@ -42,6 +77,65 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
     app.UseCors(devCorsPolicy);
 }
+
+// SIRA ÖNEMLİ: önce kimlik doğrulama (token'dan "kimsin?" çıkarılır),
+// sonra yetkilendirme ("bunu yapabilir misin?" kararı kimliğe bakar)
+app.UseAuthentication();
+app.UseAuthorization();
+
+// --- Auth endpoint'leri (anonim erişilebilir) ---
+
+// Kayıt: e-posta + şifre alır, "user" rolüyle hesap açar
+app.MapPost("/api/auth/register", async (RegisterRequest request, AppDbContext db) =>
+{
+    var email = request.Email?.Trim().ToLowerInvariant() ?? string.Empty;
+
+    if (!System.Text.RegularExpressions.Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
+    {
+        return Results.BadRequest(new { error = "Geçerli bir e-posta adresi girin." });
+    }
+
+    if (string.IsNullOrEmpty(request.Password) || request.Password.Length < 8)
+    {
+        return Results.BadRequest(new { error = "Şifre en az 8 karakter olmalıdır." });
+    }
+
+    if (await db.Users.AnyAsync(u => u.Email == email))
+    {
+        return Results.BadRequest(new { error = "Bu e-posta adresi zaten kayıtlı." });
+    }
+
+    db.Users.Add(new User
+    {
+        Id = Guid.NewGuid(),
+        Email = email,
+        PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password), // düz metin asla saklanmaz
+        Role = "user",
+        CreatedAt = DateTime.UtcNow
+    });
+    await db.SaveChangesAsync();
+
+    return Results.Ok(new { message = "Kayıt başarılı. Giriş yapabilirsiniz." });
+})
+.WithName("Register")
+.WithOpenApi();
+
+// Giriş: doğruysa 8 saatlik JWT döner
+app.MapPost("/api/auth/login", async (LoginRequest request, AppDbContext db, JwtTokenService tokens) =>
+{
+    var email = request.Email?.Trim().ToLowerInvariant() ?? string.Empty;
+    var user = await db.Users.FirstOrDefaultAsync(u => u.Email == email);
+
+    // Genel mesaj: e-posta mı şifre mi yanlış SÖYLENMEZ (user enumeration önlemi)
+    if (user is null || !BCrypt.Net.BCrypt.Verify(request.Password ?? string.Empty, user.PasswordHash))
+    {
+        return Results.Json(new { error = "E-posta veya şifre hatalı." }, statusCode: 401);
+    }
+
+    return Results.Ok(new AuthResponse(tokens.CreateToken(user), user.Email, user.Role));
+})
+.WithName("Login")
+.WithOpenApi();
 
 // Sağlık kontrolü: API ayakta mı diye bakmak için kullanılır
 app.MapGet("/health", () => Results.Ok(new
@@ -52,9 +146,9 @@ app.MapGet("/health", () => Results.Ok(new
 .WithName("HealthCheck")
 .WithOpenApi();
 
-// Yeni analiz kaydı oluşturur: önce kural motoru, sonra LLM katmanı
-app.MapPost("/api/analyses", async (CreateAnalysisRequest request, IAnalysisEngine engine,
-    ILlmAnalysisService llmService, AppDbContext db) =>
+// Yeni analiz kaydı oluşturur: önce kural motoru, sonra LLM katmanı (giriş zorunlu)
+app.MapPost("/api/analyses", async (CreateAnalysisRequest request, ClaimsPrincipal principal,
+    IAnalysisEngine engine, ILlmAnalysisService llmService, AppDbContext db) =>
 {
     // Sınır noktasında girdi doğrulama: dış veriye asla güvenme
     if (request.InputType is not ("email" or "link"))
@@ -102,7 +196,9 @@ app.MapPost("/api/analyses", async (CreateAnalysisRequest request, IAnalysisEngi
         DetectedSignals = AnalysisResponse.SerializeSignals(signals),
         CreatedAt = DateTime.UtcNow,
         LlmAssessment = llmResult?.LlmRiskAssessment,
-        EducationalExplanation = llmResult?.EducationalExplanation
+        EducationalExplanation = llmResult?.EducationalExplanation,
+        // Kayıt, token'daki kullanıcıya yazılır
+        UserId = Guid.Parse(principal.FindFirstValue(ClaimTypes.NameIdentifier)!)
     };
 
     db.Analyses.Add(analysis);
@@ -112,7 +208,8 @@ app.MapPost("/api/analyses", async (CreateAnalysisRequest request, IAnalysisEngi
     return Results.Created($"/api/analyses/{analysis.Id}", AnalysisResponse.FromEntity(analysis));
 })
 .WithName("CreateAnalysis")
-.WithOpenApi();
+.WithOpenApi()
+.RequireAuthorization();
 
 // Admin istatistikleri: tüm sayımlar DB tarafında yapılır (satırlar C#'a taşınmaz)
 app.MapGet("/api/admin/stats", async (AppDbContext db) =>
@@ -181,30 +278,50 @@ app.MapGet("/api/admin/stats", async (AppDbContext db) =>
         recentDtos));
 })
 .WithName("GetAdminStats")
-.WithOpenApi();
+.WithOpenApi()
+.RequireAuthorization(policy => policy.RequireRole("admin")); // sadece admin; aksi 403
 
-// Tek bir analiz kaydını getirir (sonuç sayfası ve geçmişten detay açma kullanır)
-app.MapGet("/api/analyses/{id:guid}", async (Guid id, AppDbContext db) =>
+// Tek bir analiz kaydını getirir: sadece sahibi veya admin görebilir
+app.MapGet("/api/analyses/{id:guid}", async (Guid id, ClaimsPrincipal principal, AppDbContext db) =>
 {
     var analysis = await db.Analyses.FindAsync(id);
-    return analysis is null
-        ? Results.NotFound(new { error = "Analiz kaydı bulunamadı." })
-        : Results.Ok(AnalysisResponse.FromEntity(analysis));
+    if (analysis is null)
+    {
+        return Results.NotFound(new { error = "Analiz kaydı bulunamadı." });
+    }
+
+    var currentUserId = Guid.Parse(principal.FindFirstValue(ClaimTypes.NameIdentifier)!);
+    if (analysis.UserId != currentUserId && !principal.IsInRole("admin"))
+    {
+        return Results.Forbid(); // 403: kayıt başkasına ait
+    }
+
+    return Results.Ok(AnalysisResponse.FromEntity(analysis));
 })
 .WithName("GetAnalysisById")
-.WithOpenApi();
+.WithOpenApi()
+.RequireAuthorization();
 
-// Tüm analiz kayıtlarını yeniden eskiye doğru listeler
-app.MapGet("/api/analyses", async (AppDbContext db) =>
+// Analiz listesi: kullanıcı SADECE kendi kayıtlarını, admin hepsini görür
+app.MapGet("/api/analyses", async (ClaimsPrincipal principal, AppDbContext db) =>
 {
-    var analyses = await db.Analyses
+    var query = db.Analyses.AsQueryable();
+
+    if (!principal.IsInRole("admin"))
+    {
+        var currentUserId = Guid.Parse(principal.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        query = query.Where(a => a.UserId == currentUserId);
+    }
+
+    var analyses = await query
         .OrderByDescending(a => a.CreatedAt)
         .ToListAsync();
 
     return analyses.Select(AnalysisResponse.FromEntity);
 })
 .WithName("ListAnalyses")
-.WithOpenApi();
+.WithOpenApi()
+.RequireAuthorization();
 
 // Uygulamayı başlat ve istekleri dinlemeye başla
 app.Run();

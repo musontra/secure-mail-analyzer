@@ -1,4 +1,5 @@
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { useAuth } from '../lib/auth'
 
 // Navbar link stili: aktif sayfa cyan, diğerleri soluk
 function navLinkClass({ isActive }: { isActive: boolean }): string {
@@ -9,6 +10,14 @@ function navLinkClass({ isActive }: { isActive: boolean }): string {
 
 // Tüm sayfaları saran ortak çerçeve: navbar + içerik (Outlet) + footer
 function Layout() {
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
+
+  function handleLogout() {
+    logout()
+    navigate('/login')
+  }
+
   return (
     <div className="flex min-h-screen flex-col bg-surface font-sans text-slate-200">
       <header className="sticky top-0 z-10 border-b border-white/10 bg-surface/80 backdrop-blur-xl">
@@ -35,16 +44,27 @@ function Layout() {
             <NavLink to="/gecmis" className={navLinkClass}>
               Geçmiş
             </NavLink>
-            <NavLink to="/admin" className={navLinkClass}>
-              Admin
-            </NavLink>
+            {/* Admin linki sadece admin rolünde görünür */}
+            {user?.role === 'admin' && (
+              <NavLink to="/admin" className={navLinkClass}>
+                Admin
+              </NavLink>
+            )}
           </nav>
 
-          {/* Sağ taraf: placeholder avatar (auth JWT adımında gelecek) */}
-          <div className="flex items-center gap-4">
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-cyan-500 to-teal-400 text-xs font-bold text-slate-950">
-              MA
+          {/* Sağ taraf: oturumdaki kullanıcı + çıkış */}
+          <div className="flex items-center gap-3">
+            <span className="hidden text-xs text-slate-400 sm:block">{user?.email}</span>
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-cyan-500 to-teal-400 text-xs font-bold uppercase text-slate-950">
+              {user?.email.slice(0, 2)}
             </span>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="rounded-lg border border-white/10 px-3 py-1.5 text-xs font-semibold text-slate-400 transition hover:bg-white/10 hover:text-white"
+            >
+              Çıkış
+            </button>
           </div>
         </div>
       </header>
