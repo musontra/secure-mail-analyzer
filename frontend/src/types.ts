@@ -24,3 +24,38 @@ export interface AnalysisResponse {
   llmAssessment: RiskLevel | null
   educationalExplanation: string | null
 }
+
+// --- Admin istatistikleri (GET /api/admin/stats) ---
+
+export interface RiskDistribution {
+  low: number
+  medium: number
+  high: number
+  lowPercent: number
+  mediumPercent: number
+  highPercent: number
+}
+
+export interface TopSignal {
+  code: string
+  title: string
+  count: number
+  percent: number
+}
+
+export interface RecentAnalysis {
+  id: string
+  inputType: InputType
+  preview: string
+  riskLevel: RiskLevel
+  riskScore: number
+  createdAt: string
+}
+
+export interface AdminStats {
+  totalAnalyses: number
+  todayAnalyses: number
+  riskDistribution: RiskDistribution
+  topSignals: TopSignal[]
+  recentAnalyses: RecentAnalysis[]
+}

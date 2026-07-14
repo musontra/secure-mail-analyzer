@@ -114,6 +114,75 @@ app.MapPost("/api/analyses", async (CreateAnalysisRequest request, IAnalysisEngi
 .WithName("CreateAnalysis")
 .WithOpenApi();
 
+// Admin istatistikleri: tüm sayımlar DB tarafında yapılır (satırlar C#'a taşınmaz)
+app.MapGet("/api/admin/stats", async (AppDbContext db) =>
+{
+    var total = await db.Analyses.CountAsync();
+
+    // Bugün = UTC günün başlangıcı (CreatedAt UTC saklanıyor)
+    var todayStart = DateTime.UtcNow.Date;
+    var today = await db.Analyses.CountAsync(a => a.CreatedAt >= todayStart);
+
+    // GroupBy -> SQL'de "GROUP BY risk_level" olarak çalışır
+    var levelCounts = await db.Analyses
+        .GroupBy(a => a.RiskLevel)
+        .Select(g => new { Level = g.Key, Count = g.Count() })
+        .ToDictionaryAsync(x => x.Level, x => x.Count);
+
+    var low = levelCounts.GetValueOrDefault("low");
+    var medium = levelCounts.GetValueOrDefault("medium");
+    var high = levelCounts.GetValueOrDefault("high");
+
+    // Boş DB'de sıfıra bölme olmaması için total kontrolü
+    int PercentOf(int count) => total == 0 ? 0 : (int)Math.Round(count * 100.0 / total);
+
+    // JSONB sinyal sayımı: jsonb_array_elements her kaydın detected_signals
+    // dizisini satırlara açar, code bazında gruplanır. Title veriden alınır
+    // (MIN = herhangi biri; aynı code'un title'ı hep aynı). Eski "{}" (obje)
+    // kayıtları jsonb_typeof filtresiyle atlanır, yoksa sorgu hata verir.
+    // EF LINQ, JSONB dizisini satırlara açmayı ifade edemediği için raw SQL tercih edildi.
+    var signalRows = await db.Database.SqlQuery<SignalCountRow>($"""
+        SELECT signal->>'code' AS "Code",
+               MIN(signal->>'title') AS "Title",
+               COUNT(*) AS "Count"
+        FROM analyses,
+             jsonb_array_elements(detected_signals) AS signal
+        WHERE jsonb_typeof(detected_signals) = 'array'
+        GROUP BY signal->>'code'
+        ORDER BY COUNT(*) DESC
+        LIMIT 6
+        """).ToListAsync();
+
+    var topSignals = signalRows
+        .Select(r => new TopSignalDto(r.Code, r.Title, (int)r.Count, PercentOf((int)r.Count)))
+        .ToList();
+
+    // Son 5 analiz; önizleme kırpması C# tarafında (SQL'i basit tutar)
+    var recent = await db.Analyses
+        .OrderByDescending(a => a.CreatedAt)
+        .Take(5)
+        .ToListAsync();
+
+    var recentDtos = recent
+        .Select(a => new RecentAnalysisDto(
+            a.Id,
+            a.InputType,
+            a.InputContent.Length <= 60 ? a.InputContent : a.InputContent[..60] + "…",
+            a.RiskLevel,
+            a.RiskScore,
+            a.CreatedAt))
+        .ToList();
+
+    return Results.Ok(new AdminStatsResponse(
+        total,
+        today,
+        new RiskDistributionDto(low, medium, high, PercentOf(low), PercentOf(medium), PercentOf(high)),
+        topSignals,
+        recentDtos));
+})
+.WithName("GetAdminStats")
+.WithOpenApi();
+
 // Tek bir analiz kaydını getirir (sonuç sayfası ve geçmişten detay açma kullanır)
 app.MapGet("/api/analyses/{id:guid}", async (Guid id, AppDbContext db) =>
 {
