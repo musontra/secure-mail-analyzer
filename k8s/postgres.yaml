@@ -1,0 +1,76 @@
+# PostgreSQL: StatefulSet + headless Service + PVC (volumeClaimTemplates).
+# StatefulSet tercihi: veritabanı durum tutan (stateful) bir yük; sabit ağ
+# kimliği ve pod'a bağlı kalıcı disk yönetimi StatefulSet'in işidir. Deployment
+# rastgele pod adı/paylaşımlı volume varsayar; DB için StatefulSet idiyomatiktir.
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: securelytix
+spec:
+  clusterIP: None            # headless: DNS doğrudan pod IP'sine çözülür
+  selector:
+    app: postgres
+  ports:
+    - port: 5432
+      targetPort: 5432
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: securelytix
+spec:
+  serviceName: postgres
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          ports:
+            - containerPort: 5432
+          env:
+            # Kullanıcı/şifre/db adı Secret'tan gelir
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef: { name: securelytix-secret, key: POSTGRES_USER }
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef: { name: securelytix-secret, key: POSTGRES_PASSWORD }
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef: { name: securelytix-secret, key: POSTGRES_DB }
+            # Alpine imajında PVC kök dizinine mount edilince alt dizin gerekir
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+          readinessProbe:
+            exec:
+              command: ["sh", "-c", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            exec:
+              command: ["sh", "-c", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          resources:
+            requests: { cpu: "100m", memory: "128Mi" }
+            limits: { cpu: "500m", memory: "512Mi" }
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi

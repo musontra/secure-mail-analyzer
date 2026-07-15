@@ -1,0 +1,56 @@
+# Frontend (nginx): Deployment (2 replica) + LoadBalancer Service.
+# nginx.conf içindeki /api proxy'si "http://backend:8080"e gider; bu ad K8s DNS
+# ile backend Service'ine çözülür (compose ile aynı ad), bu yüzden imaj değişmeden çalışır.
+#
+# ERİŞİM TERCİHİ (deneyerek seçildi):
+#  - NodePort: Docker Desktop'ın kind tabanlı cluster'ı node portlarını host'a
+#    MAP ETMİYOR; localhost:30080 bağlantı vermedi (000). Minikube'de çalışır.
+#  - Ingress: ayrıca ingress-nginx controller kurulumu gerektirir.
+#  - LoadBalancer: Docker Desktop kutudan çıktığı gibi destekler; Service'e dış IP
+#    atanır ve http://localhost üzerinden erişilir (test edildi: 200). SEÇİLEN BU.
+# nodePort alanı korundu: Minikube kullananlar type'ı NodePort yapıp
+# localhost:30080 (veya minikube service) ile erişebilir.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: securelytix
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: securelytix-frontend:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+          readinessProbe:
+            httpGet: { path: /, port: 80 }
+            periodSeconds: 5
+          livenessProbe:
+            httpGet: { path: /, port: 80 }
+            periodSeconds: 10
+          resources:
+            requests: { cpu: "50m", memory: "32Mi" }
+            limits: { cpu: "200m", memory: "128Mi" }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: securelytix
+spec:
+  type: LoadBalancer      # Docker Desktop: http://localhost
+  selector:
+    app: frontend
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 30080     # Minikube'de type: NodePort yapılırsa kullanılır

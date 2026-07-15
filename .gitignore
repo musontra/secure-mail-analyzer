@@ -20,3 +20,6 @@ npm-debug.log*
 # İşletim sistemi
 Thumbs.db
 .DS_Store
+
+# K8s gerçek secret (placeholder olan secret.example.yaml repoya girer)
+k8s/secret.yaml

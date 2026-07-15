@@ -1,0 +1,5 @@
+# Tüm Securelytix kaynaklarını izole eden namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: securelytix

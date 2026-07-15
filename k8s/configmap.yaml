@@ -1,0 +1,11 @@
+# Gizli OLMAYAN yapılandırma: veritabanı adresi/portu/adı.
+# Şifre burada DEĞİL, Secret'ta.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: securelytix-config
+  namespace: securelytix
+data:
+  DB_HOST: postgres          # postgres Service adı, K8s DNS ile çözülür
+  DB_PORT: "5432"
+  DB_NAME: secure_mail_analyzer
