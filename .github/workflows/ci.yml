@@ -1,0 +1,52 @@
+# Derleme doğrulaması: her push ve PR'da backend + frontend derleniyor mu?
+# Secret GEREKTİRMEZ: LLM çağrısı, veritabanı ve entegrasyon testleri burada koşmaz.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend:
+    name: Backend (.NET 8)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: .NET 8 kurulumu
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Bağımlılıkları geri yükle
+        run: dotnet restore backend/SecureMailAnalyzer.Api/SecureMailAnalyzer.Api.csproj
+
+      - name: Derle
+        run: dotnet build backend/SecureMailAnalyzer.Api/SecureMailAnalyzer.Api.csproj --no-restore -c Release
+
+  frontend:
+    name: Frontend (React + TypeScript)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Node kurulumu
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Bağımlılıkları kur
+        run: npm ci
+
+      - name: Tip kontrolü
+        run: npx tsc --noEmit
+
+      - name: Üretim build'i
+        run: npm run build
