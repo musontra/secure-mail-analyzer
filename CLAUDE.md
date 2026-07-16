@@ -36,5 +36,7 @@ ve nedenlerini gösterir. Staj bireysel projesi.
 
 ## Repo yapısı (hedef)
 secure-mail-analyzer/
-  backend/  frontend/  database/  k8s/  docs/
+  backend/  frontend/  k8s/  docs/
   docker-compose.yml  README.md
+(Not: şema EF Core Code-First migration'larıyla yönetiliyor, ayrı
+ database/ klasörüne gerek yok — migration'lar backend/.../Migrations/ altında.)
