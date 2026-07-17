@@ -273,7 +273,7 @@ Tek kişilik bireysel staj projesidir.
 
 | İsim | Roller |
 |------|--------|
-| Mert Ali KELEŞ| Backend (.NET, EF Core, analiz motoru, LLM entegrasyonu), Frontend (React, TypeScript, Tailwind), DevOps (Docker, Kubernetes, CI), Dokümantasyon |
+| Mert Ali KELEŞ | Backend (.NET, EF Core, analiz motoru, LLM entegrasyonu), Frontend (React, TypeScript, Tailwind), DevOps (Docker, Kubernetes, CI), Dokümantasyon |
 
 
 
