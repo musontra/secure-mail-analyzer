@@ -1,26 +1,126 @@
 @import "tailwindcss";
 
-/* Tasarım sistemi (Stitch "PhishGuard Analiz Paneli"): Deep Space navy + cyan/teal */
+/* ============================================================
+   TERMINAL / HACKER TEMASI — tema katmanı (component'ler token
+   üzerinden değişir; kart/buton/tablo yapılarına dokunulmaz).
+
+   PALET VARYANTI DEĞİŞTİRME (tarayıcı konsolu, tek satır):
+     Varyant B (teal):  document.documentElement.dataset.theme = 'teal'
+     Varyant A (yeşil): delete document.documentElement.dataset.theme
+   ============================================================ */
+
+/* --- Tema token'ları: Varyant A (fosfor yeşili) = varsayılan --- */
 @theme {
-  --color-surface: #0b1120;
-  --color-accent: #06b6d4;
-  --color-accent-soft: #2dd4bf;
-  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --color-surface: #0a0e0a;      /* zemin */
+  --color-accent: #00ff41;       /* fosfor yeşili accent */
+  --color-accent-soft: #4a7c59;  /* ikincil metin/aksan */
+  --font-sans: "JetBrains Mono", ui-monospace, "Courier New", monospace;
 }
 
+/* --- Varyant B: koyulaştırılmış teal (çalışma zamanında override) --- */
+:root[data-theme="teal"] {
+  --color-surface: #05080a;
+  --color-accent: #2dd4bf;
+  --color-accent-soft: #2dd4bf;
+}
+
+/* --- Tüm arayüz monospace; zemin token'dan --- */
+@layer base {
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--color-surface);
+  }
+}
+
+/* ============================================================
+   CRT EFEKT KATMANI
+   Şiddetler değişkenlerle ayarlanır — abartılırsa buradan kısın.
+   ============================================================ */
+:root {
+  --crt-scanline-opacity: 0.18;  /* yatay çizgi koyuluğu */
+  --crt-scanline-size: 3px;      /* çizgi aralığı */
+  --crt-glow-blur: 6px;          /* fosfor parıltısı yayılımı */
+  --crt-glow-strength: 40%;      /* parıltı yoğunluğu (accent karışım oranı) */
+  --crt-flicker-amount: 0.04;    /* flicker genliği (0 = kapalı) */
+  --crt-vignette-opacity: 0.55;  /* köşe karartma */
+}
+
+/* .crt <body>'ye uygulanır: parıltı miras yoluyla tüm metinlere iner */
+.crt {
+  position: relative;
+  text-shadow: 0 0 var(--crt-glow-blur)
+    color-mix(in srgb, var(--color-accent) var(--crt-glow-strength), transparent);
+}
+
+/* Vinyet (köşe karartma) — içeriğin altında sabit katman */
+.crt::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 59;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 55%,
+    rgba(0, 0, 0, var(--crt-vignette-opacity)) 100%
+  );
+}
+
+/* Scanline + hafif flicker — içeriğin üstünde, tıklamayı geçirir */
+.crt::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent calc(var(--crt-scanline-size) - 1px),
+    rgba(0, 0, 0, var(--crt-scanline-opacity)) calc(var(--crt-scanline-size) - 1px),
+    rgba(0, 0, 0, var(--crt-scanline-opacity)) var(--crt-scanline-size)
+  );
+  animation: crt-flicker 0.9s infinite;
+}
+
+@keyframes crt-flicker {
+  0%, 48%, 52%, 100% { opacity: 1; }
+  50% { opacity: calc(1 - var(--crt-flicker-amount)); }
+}
+
+/* Erişilebilirlik: hareket azaltma isteğinde flicker kapanır (scanline sabit kalır) */
+@media (prefers-reduced-motion: reduce) {
+  .crt::after {
+    animation: none;
+  }
+}
+
+/* Okunabilirlik kaçışı: bu sınıf ve altındaki metinlerde parıltı yok
+   (Sonuç sayfasındaki "Yapay Zeka Değerlendirmesi" metni için) */
+.crt-exempt,
+.crt-exempt * {
+  text-shadow: none !important;
+}
+
+/* ============================================================
+   COMPONENT SINIFLARI — glassmorphism -> terminal paneli
+   ============================================================ */
 @layer components {
-  /* Glassmorphism kart: yarı saydam dolgu + ince ışık kenarı + blur */
+  /* Terminal paneli: keskin köşe + ince accent kenarlık */
   .glass-card {
-    @apply rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl;
+    @apply rounded-[3px] border bg-white/[0.03] backdrop-blur-md;
+    border-color: color-mix(in srgb, var(--color-accent) 30%, transparent);
   }
 
-  /* Birincil (cyan) buton: hafif dış parlama ile */
+  /* Birincil buton: accent dolgu + accent renkli parıltı */
   .btn-primary {
-    @apply inline-flex items-center gap-2 rounded-lg bg-accent px-6 py-2.5 font-semibold text-slate-950 transition hover:bg-cyan-400 disabled:opacity-50 shadow-[0_0_24px_rgba(6,182,212,0.35)];
+    @apply inline-flex items-center gap-2 rounded-[3px] bg-accent px-6 py-2.5 font-semibold text-slate-950 transition hover:opacity-90 disabled:opacity-50;
+    box-shadow: 0 0 18px color-mix(in srgb, var(--color-accent) 45%, transparent);
   }
 
-  /* İkincil (ghost) buton: cam kenarlıklı */
+  /* İkincil (ghost) buton: ince accent kenarlık */
   .btn-ghost {
-    @apply inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-6 py-2.5 font-semibold text-slate-200 transition hover:bg-white/10;
+    @apply inline-flex items-center gap-2 rounded-[3px] border bg-white/5 px-6 py-2.5 font-semibold text-slate-200 transition hover:bg-white/10;
+    border-color: color-mix(in srgb, var(--color-accent) 30%, transparent);
   }
 }

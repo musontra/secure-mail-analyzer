@@ -10,7 +10,7 @@ import type { AnalysisResponse } from '../types'
 // null/undefined ise placeholder gösterilir; kart tamamen gizlenebilir yapıda.
 function AiAssessmentCard({ aiText }: { aiText?: string | null }) {
   return (
-    <div className="glass-card mt-6 p-5">
+    <div className="glass-card crt-exempt mt-6 p-5">
       <div className="flex items-center gap-3">
         <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent/15 text-accent">
           {/* Kıvılcım ikonu */}
