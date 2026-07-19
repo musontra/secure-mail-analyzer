@@ -44,16 +44,16 @@ function AnalyzePage() {
 
   return (
     <div className="mx-auto max-w-3xl pt-6">
-      <h1 className="text-center text-4xl font-bold tracking-tight text-white">
+      <h1 className="text-center text-4xl font-bold tracking-tight text-fg">
         E-posta veya Linki Analiz Edin
       </h1>
-      <p className="mt-3 text-center text-slate-400">
+      <p className="mt-3 text-center text-fg-soft">
         Şüpheli içerikleri saniyeler içinde tarayın, kimlik avı saldırılarından korunun.
       </p>
 
       <div className="glass-card mt-8 p-6">
         {/* Segmented toggle: E-posta / Link */}
-        <div className="inline-flex rounded-lg border border-white/10 bg-black/30 p-1">
+        <div className="inline-flex rounded-lg border border-accent/15 bg-black/30 p-1">
           {(
             [
               ['email', 'E-posta İçeriği'],
@@ -67,7 +67,7 @@ function AnalyzePage() {
               className={`rounded-md px-4 py-1.5 text-sm font-semibold transition ${
                 inputType === type
                   ? 'bg-accent text-slate-950'
-                  : 'text-slate-400 hover:text-white'
+                  : 'text-fg-soft hover:text-fg'
               }`}
             >
               {label}
@@ -76,7 +76,7 @@ function AnalyzePage() {
         </div>
 
         <textarea
-          className="mt-4 h-52 w-full resize-none rounded-xl border border-white/10 bg-black/30 p-4 text-slate-200 placeholder-slate-500 outline-none transition focus:border-accent-soft"
+          className="mt-4 h-52 w-full resize-none rounded-xl border border-accent/15 bg-black/30 p-4 text-fg-soft placeholder-fg-dim outline-none transition focus:border-accent-soft"
           placeholder={
             inputType === 'email'
               ? 'E-posta içeriğini buraya yapıştırın...'
@@ -86,7 +86,7 @@ function AnalyzePage() {
           onChange={(e) => setInputContent(e.target.value)}
         />
 
-        {error && <p className="mt-2 text-sm text-red-400">{error}</p>}
+        {error && <p className="mt-2 text-sm text-risk-high">{error}</p>}
 
         <div className="mt-4 flex justify-end">
           <button type="button" className="btn-primary" onClick={handleAnalyze} disabled={isLoading}>
@@ -104,9 +104,9 @@ function AnalyzePage() {
         {INFO_CHIPS.map((chip) => (
           <span
             key={chip}
-            className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3.5 py-1.5 text-xs text-slate-400"
+            className="flex items-center gap-1.5 rounded-full border border-accent/15 bg-white/5 px-3.5 py-1.5 text-xs text-fg-soft"
           >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2dd4bf" strokeWidth="2.5">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-accent-soft">
               <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
             {chip}

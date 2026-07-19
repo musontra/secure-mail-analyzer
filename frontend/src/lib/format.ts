@@ -14,27 +14,27 @@ export const RISK_META: Record<
 > = {
   low: {
     label: 'DÜŞÜK',
-    badgeClass: 'bg-emerald-400/10 text-emerald-400',
-    textClass: 'text-emerald-400',
-    hex: '#34d399',
+    badgeClass: 'bg-risk-low/10 text-risk-low',
+    textClass: 'text-risk-low',
+    hex: '#00e676', // --color-risk-low ile aynı (SVG gauge/donut için somut değer)
     verdict: 'İçerik Güvenli Görünüyor',
     verdictSub:
       'Belirgin bir risk sinyali tespit edilmedi. Yine de tanımadığınız gönderenlerden gelen içeriklere karşı her zaman dikkatli olun.',
   },
   medium: {
     label: 'ORTA',
-    badgeClass: 'bg-amber-400/10 text-amber-400',
-    textClass: 'text-amber-400',
-    hex: '#fbbf24',
+    badgeClass: 'bg-risk-medium/10 text-risk-medium',
+    textClass: 'text-risk-medium',
+    hex: '#ffc400', // --color-risk-medium ile aynı
     verdict: 'Şüpheli İçerik',
     verdictSub:
       'Bu içerikte dikkat gerektiren sinyaller tespit edildi. Bağlantılara tıklamadan ve herhangi bir bilgi paylaşmadan önce iki kez düşünün.',
   },
   high: {
     label: 'YÜKSEK',
-    badgeClass: 'bg-red-400/10 text-red-400',
-    textClass: 'text-red-400',
-    hex: '#f87171',
+    badgeClass: 'bg-risk-high/10 text-risk-high',
+    textClass: 'text-risk-high',
+    hex: '#ff5252', // --color-risk-high ile aynı
     verdict: 'Tehdit Tespit Edildi',
     verdictSub:
       'Bu içerik yüksek ihtimalle bir kimlik avı (phishing) girişimidir. Hassas bilgilerinizi paylaşmayın, bağlantılara tıklamayın.',

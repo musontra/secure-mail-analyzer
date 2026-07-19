@@ -4,7 +4,7 @@ import { useAuth } from '../lib/auth'
 // Navbar link stili: aktif sayfa cyan, diğerleri soluk
 function navLinkClass({ isActive }: { isActive: boolean }): string {
   return `text-sm font-medium transition ${
-    isActive ? 'text-cyan-400' : 'text-slate-400 hover:text-white'
+    isActive ? 'text-accent' : 'text-fg-soft hover:text-fg'
   }`
 }
 
@@ -19,8 +19,8 @@ function Layout() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-surface font-sans text-slate-200">
-      <header className="sticky top-0 z-10 border-b border-white/10 bg-surface/80 backdrop-blur-xl">
+    <div className="flex min-h-screen flex-col bg-surface font-sans text-fg-soft">
+      <header className="sticky top-0 z-10 border-b border-accent/15 bg-surface/80 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
           {/* Logo */}
           <NavLink to="/" className="flex items-center gap-2.5">
@@ -31,7 +31,7 @@ function Layout() {
                 <path d="M8.5 11.5l2.5 2.5 4.5-4.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </span>
-            <span className="text-lg font-extrabold tracking-widest text-white">
+            <span className="text-lg font-extrabold tracking-widest text-fg">
               SECURE<span className="text-accent-soft">LYTIX</span>
             </span>
           </NavLink>
@@ -54,14 +54,14 @@ function Layout() {
 
           {/* Sağ taraf: oturumdaki kullanıcı + çıkış */}
           <div className="flex items-center gap-3">
-            <span className="hidden text-xs text-slate-400 sm:block">{user?.email}</span>
+            <span className="hidden text-xs text-fg-soft sm:block">{user?.email}</span>
             <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-cyan-500 to-teal-400 text-xs font-bold uppercase text-slate-950">
               {user?.email.slice(0, 2)}
             </span>
             <button
               type="button"
               onClick={handleLogout}
-              className="rounded-lg border border-white/10 px-3 py-1.5 text-xs font-semibold text-slate-400 transition hover:bg-white/10 hover:text-white"
+              className="rounded-lg border border-accent/15 px-3 py-1.5 text-xs font-semibold text-fg-soft transition hover:bg-white/10 hover:text-fg"
             >
               Çıkış
             </button>
@@ -74,13 +74,13 @@ function Layout() {
         <Outlet />
       </main>
 
-      <footer className="border-t border-white/10">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5 text-xs text-slate-500">
+      <footer className="border-t border-accent/15">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5 text-xs text-fg-dim">
           <span>© 2026 Securelytix Security Analysis. Tüm hakları saklıdır.</span>
           <div className="flex gap-6">
-            <span className="cursor-pointer hover:text-slate-300">Gizlilik Politikası</span>
-            <span className="cursor-pointer hover:text-slate-300">Kullanım Şartları</span>
-            <span className="cursor-pointer hover:text-slate-300">Destek</span>
+            <span className="cursor-pointer hover:text-fg-soft">Gizlilik Politikası</span>
+            <span className="cursor-pointer hover:text-fg-soft">Kullanım Şartları</span>
+            <span className="cursor-pointer hover:text-fg-soft">Destek</span>
           </div>
         </div>
       </footer>

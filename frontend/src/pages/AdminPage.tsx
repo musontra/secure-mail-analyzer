@@ -21,11 +21,11 @@ function AdminPage() {
   }, [])
 
   if (error) {
-    return <p className="mt-10 text-center text-red-400">{error}</p>
+    return <p className="mt-10 text-center text-risk-high">{error}</p>
   }
 
   if (!stats) {
-    return <p className="mt-10 text-center text-slate-400">İstatistikler yükleniyor...</p>
+    return <p className="mt-10 text-center text-fg-soft">İstatistikler yükleniyor...</p>
   }
 
   const { riskDistribution: dist } = stats
@@ -42,8 +42,8 @@ function AdminPage() {
     <div>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white">Yönetim Paneli</h1>
-          <p className="mt-1 text-sm text-slate-400">
+          <h1 className="term-head text-3xl font-bold text-fg">Yönetim Paneli</h1>
+          <p className="mt-1 text-sm text-fg-soft">
             Sistem güvenliği ve analiz metriklerine genel bakış.
           </p>
         </div>
@@ -53,28 +53,28 @@ function AdminPage() {
       {/* Özet kartlar */}
       <div className="mt-8 grid gap-5 md:grid-cols-3">
         <div className="glass-card p-5">
-          <span className="text-[11px] font-semibold tracking-widest text-slate-500">
+          <span className="text-[11px] font-semibold tracking-widest text-fg-dim">
             TOPLAM ANALİZ
           </span>
-          <p className="mt-3 text-4xl font-bold text-white">
+          <p className="mt-3 text-4xl font-bold text-fg">
             {stats.totalAnalyses.toLocaleString('tr-TR')}
           </p>
-          <p className="mt-1 text-xs text-slate-500">tüm zamanlar</p>
+          <p className="mt-1 text-xs text-fg-dim">tüm zamanlar</p>
         </div>
 
         <div className="glass-card p-5">
-          <span className="text-[11px] font-semibold tracking-widest text-slate-500">
+          <span className="text-[11px] font-semibold tracking-widest text-fg-dim">
             YÜKSEK RİSKLİ
           </span>
-          <p className="mt-3 text-4xl font-bold text-red-400">
+          <p className="mt-3 text-4xl font-bold text-risk-high">
             {dist.high.toLocaleString('tr-TR')}
           </p>
-          <p className="mt-1 text-xs text-slate-500">%{dist.highPercent} toplam içindeki pay</p>
+          <p className="mt-1 text-xs text-fg-dim">%{dist.highPercent} toplam içindeki pay</p>
         </div>
 
         <div className="glass-card border-accent/30 p-5">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-semibold tracking-widest text-slate-500">
+            <span className="text-[11px] font-semibold tracking-widest text-fg-dim">
               BUGÜNKÜ ANALİZLER
             </span>
             <span className="flex items-center gap-1.5 rounded-full bg-accent/15 px-2 py-0.5 text-xs font-bold text-accent">
@@ -82,10 +82,10 @@ function AdminPage() {
               CANLI
             </span>
           </div>
-          <p className="mt-3 text-4xl font-bold text-white">
+          <p className="mt-3 text-4xl font-bold text-fg">
             {stats.todayAnalyses.toLocaleString('tr-TR')}
           </p>
-          <p className="mt-1 text-xs text-slate-500">UTC gününe göre</p>
+          <p className="mt-1 text-xs text-fg-dim">UTC gününe göre</p>
         </div>
       </div>
 
@@ -93,7 +93,7 @@ function AdminPage() {
       <div className="mt-6 grid gap-5 lg:grid-cols-2">
         {/* Donut: risk dağılımı */}
         <div className="glass-card p-5">
-          <h3 className="font-semibold text-white">Risk Dağılımı</h3>
+          <h3 className="font-semibold text-fg">Risk Dağılımı</h3>
           {hasData ? (
             <>
               <div className="relative mx-auto h-56 w-56">
@@ -114,10 +114,10 @@ function AdminPage() {
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-2xl font-bold text-white">
+                  <span className="text-2xl font-bold text-fg">
                     {stats.totalAnalyses.toLocaleString('tr-TR')}
                   </span>
-                  <span className="text-xs text-slate-500">Vaka</span>
+                  <span className="text-xs text-fg-dim">Vaka</span>
                 </div>
               </div>
               <div className="flex justify-center gap-8 text-center text-xs">
@@ -126,13 +126,13 @@ function AdminPage() {
                     <p className="font-semibold" style={{ color: entry.color }}>
                       {entry.name}
                     </p>
-                    <p className="text-slate-500">%{entry.percent}</p>
+                    <p className="text-fg-dim">%{entry.percent}</p>
                   </div>
                 ))}
               </div>
             </>
           ) : (
-            <p className="flex h-56 items-center justify-center text-sm text-slate-500">
+            <p className="flex h-56 items-center justify-center text-sm text-fg-dim">
               Henüz analiz yapılmadı.
             </p>
           )}
@@ -140,9 +140,9 @@ function AdminPage() {
 
         {/* Yatay barlar: en sık sinyaller */}
         <div className="glass-card p-5">
-          <h3 className="font-semibold text-white">En Sık Görülen Sinyaller</h3>
+          <h3 className="font-semibold text-fg">En Sık Görülen Sinyaller</h3>
           {stats.topSignals.length === 0 ? (
-            <p className="flex h-56 items-center justify-center text-sm text-slate-500">
+            <p className="flex h-56 items-center justify-center text-sm text-fg-dim">
               Henüz sinyal verisi yok.
             </p>
           ) : (
@@ -150,14 +150,14 @@ function AdminPage() {
               {stats.topSignals.map((signal) => (
                 <div key={signal.code}>
                   <div className="mb-1 flex justify-between text-xs">
-                    <span className="text-slate-300">{signal.title}</span>
-                    <span className="text-slate-500">
+                    <span className="text-fg-soft">{signal.title}</span>
+                    <span className="text-fg-dim">
                       {signal.count} analiz · %{signal.percent}
                     </span>
                   </div>
                   <div className="h-2 rounded-full bg-white/5">
                     <div
-                      className="h-2 rounded-full bg-gradient-to-r from-teal-400 to-cyan-500"
+                      className="h-2 rounded-[2px] bg-accent"
                       style={{ width: `${signal.percent}%` }}
                     />
                   </div>
@@ -171,14 +171,14 @@ function AdminPage() {
       {/* Son analizler: satıra tıklayınca sonuç sayfası açılır */}
       <div className="glass-card mt-6 overflow-hidden">
         <div className="flex items-center justify-between px-5 py-4">
-          <h3 className="font-semibold text-white">Son Analizler</h3>
-          <Link to="/gecmis" className="text-xs font-semibold text-accent hover:text-cyan-300">
+          <h3 className="font-semibold text-fg">Son Analizler</h3>
+          <Link to="/gecmis" className="text-xs font-semibold text-accent hover:text-accent">
             Tümünü Gör
           </Link>
         </div>
         <table className="w-full text-left text-sm">
           <thead>
-            <tr className="border-t border-b border-white/10 text-[11px] font-semibold tracking-widest text-slate-500">
+            <tr className="border-t border-b border-accent/15 text-[11px] font-semibold tracking-widest text-fg-dim">
               <th className="px-5 py-3">İÇERİK</th>
               <th className="px-5 py-3">RİSK</th>
               <th className="px-5 py-3">SKOR</th>
@@ -188,7 +188,7 @@ function AdminPage() {
           <tbody>
             {stats.recentAnalyses.length === 0 ? (
               <tr>
-                <td colSpan={4} className="px-5 py-8 text-center text-slate-500">
+                <td colSpan={4} className="px-5 py-8 text-center text-fg-dim">
                   Henüz analiz yapılmadı.
                 </td>
               </tr>
@@ -196,17 +196,17 @@ function AdminPage() {
               stats.recentAnalyses.map((row) => (
                 <tr
                   key={row.id}
-                  className="cursor-pointer border-b border-white/5 transition hover:bg-white/5"
+                  className="cursor-pointer border-b border-accent/10 transition hover:bg-white/5"
                   onClick={() => navigate(`/sonuc/${row.id}`)}
                 >
-                  <td className="max-w-md px-5 py-3.5 text-slate-300">{row.preview}</td>
+                  <td className="max-w-md px-5 py-3.5 text-fg-soft">{row.preview}</td>
                   <td className="px-5 py-3.5">
                     <RiskBadge level={row.riskLevel} />
                   </td>
                   <td className={`px-5 py-3.5 font-mono font-bold ${RISK_META[row.riskLevel].textClass}`}>
                     {row.riskScore}/100
                   </td>
-                  <td className="px-5 py-3.5 text-slate-500">
+                  <td className="px-5 py-3.5 text-fg-dim">
                     {formatRelativeTime(row.createdAt)}
                   </td>
                 </tr>

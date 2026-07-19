@@ -9,11 +9,23 @@
      Varyant A (yeşil): delete document.documentElement.dataset.theme
    ============================================================ */
 
-/* --- Tema token'ları: Varyant A (fosfor yeşili) = varsayılan --- */
+/* --- Tema token'ları: Varyant A (fosfor yeşili) = varsayılan ---
+   Fosfor mantığı: beyaz metin yok, her şey accent hue ailesinden üç kademe. */
 @theme {
   --color-surface: #0a0e0a;      /* zemin */
   --color-accent: #00ff41;       /* fosfor yeşili accent */
-  --color-accent-soft: #4a7c59;  /* ikincil metin/aksan */
+  --color-accent-soft: #4a7c59;  /* ikincil aksan */
+
+  /* Metin kademeleri (parlak -> sönük) */
+  --color-fg: #c6ffd2;           /* birincil: başlıklar, önemli değerler */
+  --color-fg-soft: #7dc98f;      /* ikincil: gövde metni */
+  --color-fg-dim: #4a7c59;       /* sönük: etiketler, tarihler, yardımcı */
+
+  /* Risk renkleri (anlamlı; parlak/doygun neon, palet varyantından bağımsız) */
+  --color-risk-low: #00e676;
+  --color-risk-medium: #ffc400;
+  --color-risk-high: #ff5252;
+
   --font-sans: "JetBrains Mono", ui-monospace, "Courier New", monospace;
 }
 
@@ -21,7 +33,10 @@
 :root[data-theme="teal"] {
   --color-surface: #05080a;
   --color-accent: #2dd4bf;
-  --color-accent-soft: #2dd4bf;
+  --color-accent-soft: #4a8c82;
+  --color-fg: #c6fff6;
+  --color-fg-soft: #79d4c6;
+  --color-fg-dim: #4a8c82;
 }
 
 /* --- Tüm arayüz monospace; zemin token'dan --- */
@@ -100,6 +115,12 @@
 .crt-exempt,
 .crt-exempt * {
   text-shadow: none !important;
+}
+
+/* Terminal başlığı: başlığın önüne tek karakterlik accent prompt işareti */
+.term-head::before {
+  content: "> ";
+  color: var(--color-accent);
 }
 
 /* ============================================================

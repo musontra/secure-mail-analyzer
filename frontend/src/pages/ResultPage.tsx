@@ -18,9 +18,10 @@ function AiAssessmentCard({ aiText }: { aiText?: string | null }) {
             <path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" />
           </svg>
         </span>
-        <h3 className="font-semibold text-white">Yapay Zeka Değerlendirmesi</h3>
+        <h3 className="term-head font-semibold text-fg">Yapay Zeka Değerlendirmesi</h3>
       </div>
-      <p className="mt-3 text-sm leading-relaxed text-slate-400">
+      {/* En okunaklı kademe (text-fg): AI açıklaması sönük tona düşmez */}
+      <p className="mt-3 text-sm leading-relaxed text-fg">
         {aiText ?? 'Yapay zeka analizi bu kayıt için mevcut değil.'}
       </p>
     </div>
@@ -45,7 +46,7 @@ function ResultPage() {
   if (error) {
     return (
       <div className="pt-10 text-center">
-        <p className="text-red-400">{error}</p>
+        <p className="text-risk-high">{error}</p>
         <Link to="/" className="btn-primary mt-6">
           Yeni Analiz
         </Link>
@@ -54,7 +55,7 @@ function ResultPage() {
   }
 
   if (!analysis) {
-    return <p className="pt-10 text-center text-slate-400">Sonuç yükleniyor...</p>
+    return <p className="pt-10 text-center text-fg-soft">Sonuç yükleniyor...</p>
   }
 
   const meta = RISK_META[analysis.riskLevel]
@@ -63,7 +64,7 @@ function ResultPage() {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <Link to="/" className="text-sm text-slate-400 transition hover:text-white">
+      <Link to="/" className="text-sm text-fg-soft transition hover:text-fg">
         ← Yeni Analiz
       </Link>
 
@@ -74,22 +75,22 @@ function ResultPage() {
           color={meta.hex}
           label={`${meta.label} RİSK`}
         />
-        <h1 className="mt-4 text-3xl font-bold text-white">{meta.verdict}</h1>
-        <p className="mt-2 max-w-xl text-center text-sm text-slate-400">{meta.verdictSub}</p>
+        <h1 className="mt-4 text-3xl font-bold text-fg">{meta.verdict}</h1>
+        <p className="mt-2 max-w-xl text-center text-sm text-fg-soft">{meta.verdictSub}</p>
       </div>
 
       {/* Sinyal listesi */}
       <div className="mt-8 flex items-end justify-between">
-        <h2 className="text-lg font-semibold text-white">
+        <h2 className="term-head text-lg font-semibold text-fg">
           Tespit Edilen Sinyaller ({sortedSignals.length})
         </h2>
-        <span className="text-[11px] font-semibold tracking-widest text-slate-500">
+        <span className="text-[11px] font-semibold tracking-widest text-fg-dim">
           ÖNEM SIRASINA GÖRE
         </span>
       </div>
 
       {sortedSignals.length === 0 ? (
-        <p className="glass-card mt-4 p-5 text-sm text-slate-400">
+        <p className="glass-card mt-4 p-5 text-sm text-fg-soft">
           Herhangi bir risk sinyali tespit edilmedi.
         </p>
       ) : (
