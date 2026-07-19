@@ -96,7 +96,7 @@ function ResultPage() {
       ) : (
         <div className="mt-4 space-y-3">
           {sortedSignals.map((signal, index) => (
-            <SignalCard key={signal.code} signal={signal} defaultOpen={index === 0} />
+            <SignalCard key={signal.code} signal={signal} defaultOpen={index === 0} index={index} />
           ))}
         </div>
       )}

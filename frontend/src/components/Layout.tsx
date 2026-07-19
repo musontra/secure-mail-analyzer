@@ -1,5 +1,7 @@
-import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { AnimatePresence, motion } from 'motion/react'
 import { useAuth } from '../lib/auth'
+import { useAnims } from '../lib/anims'
 
 // Navbar link stili: aktif sayfa cyan, diğerleri soluk
 function navLinkClass({ isActive }: { isActive: boolean }): string {
@@ -12,6 +14,8 @@ function navLinkClass({ isActive }: { isActive: boolean }): string {
 function Layout() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+  const { d } = useAnims()
 
   function handleLogout() {
     logout()
@@ -69,9 +73,19 @@ function Layout() {
         </div>
       </header>
 
-      {/* Aktif rotanın sayfası buraya çizilir */}
+      {/* Aktif rotanın sayfası buraya çizilir; rota değişiminde kısa fade + yukarı kayma */}
       <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-10">
-        <Outlet />
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: d(0.18), ease: 'easeOut' }}
+          >
+            <Outlet />
+          </motion.div>
+        </AnimatePresence>
       </main>
 
       <footer className="border-t border-accent/15">

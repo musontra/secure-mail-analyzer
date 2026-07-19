@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { AnimatePresence, motion } from 'motion/react'
 import { getAnalyses } from '../lib/api'
 import { RISK_META, formatRelativeTime, truncate } from '../lib/format'
 import RiskBadge from '../components/RiskBadge'
+import { useAnims } from '../lib/anims'
 import type { AnalysisResponse, RiskLevel } from '../types'
 
 type Filter = 'all' | RiskLevel
@@ -32,6 +34,7 @@ function TypeIcon({ type }: { type: 'email' | 'link' }) {
 // Geçmiş sayfası: tüm analizler tablo halinde, client-side risk filtresiyle
 function HistoryPage() {
   const navigate = useNavigate()
+  const { d } = useAnims()
   const [analyses, setAnalyses] = useState<AnalysisResponse[]>([])
   const [filter, setFilter] = useState<Filter>('all')
   const [isLoading, setIsLoading] = useState(true)
@@ -102,33 +105,41 @@ function HistoryPage() {
                   </td>
                 </tr>
               ) : (
-                filtered.map((analysis) => (
-                  <tr
-                    key={analysis.id}
-                    className="cursor-pointer border-b border-accent/10 transition hover:bg-white/5"
-                    onClick={() => navigate(`/sonuc/${analysis.id}`)}
-                  >
-                    <td className="px-5 py-2.5">
-                      <TypeIcon type={analysis.inputType} />
-                    </td>
-                    <td className="max-w-md px-5 py-2.5 text-fg-soft">
-                      {truncate(analysis.inputContent)}
-                    </td>
-                    <td className="px-5 py-2.5">
-                      <RiskBadge level={analysis.riskLevel} />
-                    </td>
-                    {/* Risk puanı: yüksek sayı = kırmızı (güven puanı DEĞİL) */}
-                    <td
-                      className={`px-5 py-2.5 font-mono font-bold ${RISK_META[analysis.riskLevel].textClass}`}
+                // Yüklenirken hafif stagger; filtre değişiminde AnimatePresence ile yumuşak giriş/çıkış
+                <AnimatePresence initial={true} mode="popLayout">
+                  {filtered.map((analysis, i) => (
+                    <motion.tr
+                      key={analysis.id}
+                      layout
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: d(0.2), delay: d(i * 0.04), ease: 'easeOut' }}
+                      className="cursor-pointer border-b border-accent/10 transition hover:bg-white/5"
+                      onClick={() => navigate(`/sonuc/${analysis.id}`)}
                     >
-                      {analysis.riskScore}/100
-                    </td>
-                    <td className="px-5 py-2.5 text-fg-soft">
-                      {formatRelativeTime(analysis.createdAt)}
-                    </td>
-                    <td className="px-5 py-2.5 text-fg-dim">›</td>
-                  </tr>
-                ))
+                      <td className="px-5 py-2.5">
+                        <TypeIcon type={analysis.inputType} />
+                      </td>
+                      <td className="max-w-md px-5 py-2.5 text-fg-soft">
+                        {truncate(analysis.inputContent)}
+                      </td>
+                      <td className="px-5 py-2.5">
+                        <RiskBadge level={analysis.riskLevel} />
+                      </td>
+                      {/* Risk puanı: yüksek sayı = kırmızı (güven puanı DEĞİL) */}
+                      <td
+                        className={`px-5 py-2.5 font-mono font-bold ${RISK_META[analysis.riskLevel].textClass}`}
+                      >
+                        {analysis.riskScore}/100
+                      </td>
+                      <td className="px-5 py-2.5 text-fg-soft">
+                        {formatRelativeTime(analysis.createdAt)}
+                      </td>
+                      <td className="px-5 py-2.5 text-fg-dim">›</td>
+                    </motion.tr>
+                  ))}
+                </AnimatePresence>
               )}
             </tbody>
           </table>

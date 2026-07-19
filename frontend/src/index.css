@@ -19,7 +19,7 @@
   /* Metin kademeleri (parlak -> sönük) */
   --color-fg: #c6ffd2;           /* birincil: başlıklar, önemli değerler */
   --color-fg-soft: #7dc98f;      /* ikincil: gövde metni */
-  --color-fg-dim: #4a7c59;       /* sönük: etiketler, tarihler, yardımcı */
+  --color-fg-dim: #5c9670;       /* sönük: etiketler, tarihler (WCAG AA ~5.5:1) */
 
   /* Risk renkleri (anlamlı; parlak/doygun neon, palet varyantından bağımsız) */
   --color-risk-low: #00e676;
@@ -36,7 +36,7 @@
   --color-accent-soft: #4a8c82;
   --color-fg: #c6fff6;
   --color-fg-soft: #79d4c6;
-  --color-fg-dim: #4a8c82;
+  --color-fg-dim: #57a99b;
 }
 
 /* --- Tüm arayüz monospace; zemin token'dan --- */

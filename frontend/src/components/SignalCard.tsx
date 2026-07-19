@@ -1,9 +1,12 @@
 import { useState } from 'react'
+import { AnimatePresence, motion } from 'motion/react'
 import type { DetectedSignal } from '../types'
+import { useAnims } from '../lib/anims'
 
 interface SignalCardProps {
   signal: DetectedSignal
   defaultOpen?: boolean
+  index?: number // giriş stagger'ı için sıra (log akışı hissi)
 }
 
 // Sinyal puanına göre önem rengi (nokta + puan chip'i)
@@ -15,7 +18,8 @@ function severityColor(score: number): string {
 }
 
 // Genişletilebilir sinyal kartı: başlık satırına tıklayınca açıklama açılır
-function SignalCard({ signal, defaultOpen = false }: SignalCardProps) {
+function SignalCard({ signal, defaultOpen = false, index = 0 }: SignalCardProps) {
+  const { d } = useAnims()
   const [isOpen, setIsOpen] = useState(defaultOpen)
   const color = severityColor(signal.score)
 
@@ -25,7 +29,13 @@ function SignalCard({ signal, defaultOpen = false }: SignalCardProps) {
     : null
 
   return (
-    <div className="glass-card overflow-hidden">
+    <motion.div
+      className="glass-card overflow-hidden"
+      // Giriş: sırayla belir (kart başına ~60ms) — log akışı hissi
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: d(0.25), delay: d(index * 0.06), ease: 'easeOut' }}
+    >
       <button
         type="button"
         className="flex w-full items-center gap-3 px-5 py-4 text-left transition hover:bg-white/5"
@@ -54,26 +64,38 @@ function SignalCard({ signal, defaultOpen = false }: SignalCardProps) {
         </svg>
       </button>
 
-      {isOpen && (
-        <div className="border-t border-accent/15 px-5 py-4">
-          <p className="text-sm leading-relaxed text-fg-soft">{signal.description}</p>
+      {/* Aç/kapa: yükseklik + opaklık yumuşasın (overflow-hidden ile taşma engellenir) */}
+      <AnimatePresence initial={false}>
+        {isOpen && (
+          <motion.div
+            key="body"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: d(0.25), ease: 'easeOut' }}
+            className="overflow-hidden"
+          >
+            <div className="border-t border-accent/15 px-5 py-4">
+              <p className="text-sm leading-relaxed text-fg-soft">{signal.description}</p>
 
-          {signal.matchedText && (
-            <div className="mt-3 rounded-lg border border-accent/15 bg-black/40 p-3 font-mono text-sm">
-              {mismatchParts ? (
-                // "Görünen / Gerçek" karşılaştırması iki satır
-                <>
-                  <div className="text-risk-low">{mismatchParts[0]}</div>
-                  <div className="text-risk-high">{mismatchParts[1]}</div>
-                </>
-              ) : (
-                <span className="text-fg-soft">{signal.matchedText}</span>
+              {signal.matchedText && (
+                <div className="mt-3 rounded-lg border border-accent/15 bg-black/40 p-3 font-mono text-sm">
+                  {mismatchParts ? (
+                    // "Görünen / Gerçek" karşılaştırması iki satır
+                    <>
+                      <div className="text-risk-low">{mismatchParts[0]}</div>
+                      <div className="text-risk-high">{mismatchParts[1]}</div>
+                    </>
+                  ) : (
+                    <span className="text-fg-soft">{signal.matchedText}</span>
+                  )}
+                </div>
               )}
             </div>
-          )}
-        </div>
-      )}
-    </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   )
 }
 
