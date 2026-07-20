@@ -4,6 +4,7 @@ import { getAnalysisById } from '../lib/api'
 import { RISK_META } from '../lib/format'
 import RiskGauge from '../components/RiskGauge'
 import SignalCard from '../components/SignalCard'
+import GlitchText from '../components/reactbits/GlitchText'
 import type { AnalysisResponse } from '../types'
 
 // Yapay zeka kartı: aiAssessment ileride API'den gelecek (Adım 7).
@@ -75,7 +76,10 @@ function ResultPage() {
           color={meta.hex}
           label={`${meta.label} RİSK`}
         />
-        <h1 className="mt-4 text-3xl font-bold text-fg">{meta.verdict}</h1>
+        {/* Yüksek riskte hüküm cümlesine hafif glitch (uyarı sinyali); düşük/ortada düz */}
+        <h1 className="mt-4 text-3xl font-bold text-fg">
+          <GlitchText text={meta.verdict} active={analysis.riskLevel === 'high'} />
+        </h1>
         <p className="mt-2 max-w-xl text-center text-sm text-fg-soft">{meta.verdictSub}</p>
       </div>
 

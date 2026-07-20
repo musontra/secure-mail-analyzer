@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { createAnalysis } from '../lib/api'
+import MatrixRain from '../components/reactbits/MatrixRain'
 import type { InputType } from '../types'
 
 // Alttaki bilgi chip'leri (tasarımdaki üç rozet)
@@ -44,6 +45,8 @@ function AnalyzePage() {
 
   return (
     <div className="mx-auto max-w-3xl pt-6">
+      {/* Yalnızca ana sayfada: düşük opaklıkta matrix arka planı (fixed, içeriğin arkasında) */}
+      <MatrixRain />
       <h1 className="text-center text-4xl font-bold tracking-tight text-fg">
         E-posta veya Linki Analiz Edin
       </h1>

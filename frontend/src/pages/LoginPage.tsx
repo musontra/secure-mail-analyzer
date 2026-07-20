@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { loginRequest } from '../lib/api'
 import { useAuth } from '../lib/auth'
+import DecryptedText from '../components/reactbits/DecryptedText'
 
 // Giriş sayfası (docs/design/login.png tasarımına sadık)
 function LoginPage() {
@@ -57,9 +58,11 @@ function LoginPage() {
                 <path d="M12 3l8 3v6c0 4.5-3.5 8-8 9-4.5-1-8-4.5-8-9V6l8-3z" strokeLinejoin="round" />
               </svg>
             </span>
-            <span className="mt-3 text-sm font-extrabold tracking-widest text-fg">
-              SECURE<span className="text-accent-soft">LYTIX</span>
-            </span>
+            {/* Açılışta decrypt efekti (bir kez, döngü yok) */}
+            <DecryptedText
+              text="SECURELYTIX"
+              className="mt-3 text-sm font-extrabold tracking-widest text-accent-soft"
+            />
           </div>
 
           <h1 className="mt-6 text-center text-2xl font-bold text-fg">Giriş Yap</h1>
